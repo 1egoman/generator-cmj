@@ -1,7 +1,7 @@
 {
-  "name": "generator-node-coffee",
+  "name": "generator-cmj",
   "version": "0.0.3",
-  "description": "A node generator for Yeoman for Coffee-Script projects",
+  "description": "A node generator for Yeoman forked from generator-node-coffee",
   "keywords": [
     "yeoman-generator",
     "scaffold",
