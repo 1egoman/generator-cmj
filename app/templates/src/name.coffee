@@ -10,3 +10,6 @@
 
 exports.awesome = ->
   'awesome'
+
+exports.connectToDB = ->
+  require "./db" "mongodb://user:password@example.com:port/database"
