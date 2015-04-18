@@ -1,7 +1,7 @@
 {
   "name": "<%= slugname %>",
   "version": "0.0.0",
-  "main": "lib/<%= slugname %>.js",
+  "main": "src/<%= slugname %>.coffee",
   "description": "<%= props.description %>",
   "homepage": "<%= props.homepage %>",
   "bugs": "<%= repoUrl %>/issues",
@@ -19,6 +19,12 @@
       "type": "<%= props.license %>"
     }
   ],
+  "dependencies": {
+    "mongoose": "^4.0.1",
+    "body-parser": "^1.12.3",
+    "express": "^4.12.3",
+    "express-session": "^1.11.1"
+  },
   "devDependencies": {
     "matchdep": "~0.1.1",
     "grunt-contrib-jshint": "~0.6.0",

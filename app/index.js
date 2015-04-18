@@ -78,6 +78,11 @@ NodeCoffeeGenerator.prototype.lib = function lib() {
   this.template('src/name.coffee', 'src/' + this.slugname + '.coffee');
 };
 
+NodeCoffeeGenerator.prototype.models = function models() {
+  this.mkdir('src/models');
+  this.template('src/models/model.coffee', 'src/models/schema.coffee');
+};
+
 NodeCoffeeGenerator.prototype.test = function test() {
   this.mkdir('test');
   this.mkdir('test/src');
