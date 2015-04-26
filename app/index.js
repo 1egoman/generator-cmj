@@ -15,6 +15,7 @@ var NodeCoffeeGenerator = module.exports = function NodeCoffeeGenerator(args, op
   });
 
   this.pkg = JSON.parse(this.readFileAsString(path.join(__dirname, '../package.json')));
+
 };
 util.inherits(NodeCoffeeGenerator, yeoman.generators.NamedBase);
 
@@ -42,11 +43,17 @@ NodeCoffeeGenerator.prototype.askFor = function askFor() {
     message: 'License',
     default: 'MIT'
   }, {
+    name: "frontend",
+    message: "Scaffold Frontend?",
+    default: "y"
+  }, {
     name: 'githubUsername',
-    message: 'GitHub username'
+    message: 'GitHub username',
+    default: '1egoman'
   }, {
     name: 'authorName',
-    message: 'Author\'s Name'
+    message: 'Author\'s Name',
+    default: "Ryan Gaus"
   }, {
     name: 'authorEmail',
     message: 'Author\'s Email'
@@ -68,14 +75,35 @@ NodeCoffeeGenerator.prototype.askFor = function askFor() {
     }
 
     this.props = props;
+    var that = this;
 
-    cb();
+    if (this.props.frontend === "y" || this.props.frontend === "Y") {
+      this.props.frontend = true;
+
+      // ask frontend specific questions
+      this.prompt([{
+        name: 'bodyparser',
+        message: "Which bodyparser should I use? (form, json, or none)",
+        default: "json"
+      }], function(frontendProps) {
+        console.log(props)
+        that.props.bodyparser = frontendProps.bodyparser;
+        cb();
+      });
+
+    } else {
+      this.props.frontend = false;
+      cb();
+    }
+
   }.bind(this));
 };
 
 NodeCoffeeGenerator.prototype.lib = function lib() {
   this.mkdir('src');
   this.template('src/name.coffee', 'src/' + this.slugname + '.coffee');
+  this.template('src/db.coffee', 'src/db.coffee');
+  this.template('src/models/model.coffee', 'src/models/model.coffee');
 };
 
 NodeCoffeeGenerator.prototype.models = function models() {
@@ -102,4 +130,16 @@ NodeCoffeeGenerator.prototype.projectfiles = function projectfiles() {
   this.template('README.md');
   this.template('Gruntfile.js');
   this.template('_package.json', 'package.json');
+};
+
+NodeCoffeeGenerator.prototype.frontend = function frontend() {
+  if (!this.props.frontend) return;
+
+  this.mkdir('public');
+  this.mkdir('public/sass');
+
+  // sass templates
+  this.template('public/index.scss', 'public/sass/index.scss');
+  this.directory('public/bootstrap', 'public/sass/bootstrap');
+  this.copy('public/_bootstrap.scss', 'public/sass/_bootstrap.scss');
 };

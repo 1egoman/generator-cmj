@@ -23,7 +23,12 @@
     "mongoose": "^4.0.1",
     "body-parser": "^1.12.3",
     "express": "^4.12.3",
-    "express-session": "^1.11.1"
+    "express-session": "^1.11.1",
+    "express-static": "^1.0.3",
+    <% if (props.frontend) { %>
+    "chalk": "^1.0.0",
+    "node-sass-middleware": "^0.5.0"<% } else {%>
+    "chalk": "^1.0.0"<% } %>
   },
   "devDependencies": {
     "matchdep": "~0.1.1",
