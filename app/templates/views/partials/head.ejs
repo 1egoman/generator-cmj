@@ -1,0 +1,14 @@
+<meta charset="UTF-8">
+
+<!-- set title according to what the user said, or fallback to a default -->
+<% if (typeof title !== "undefined") { %>
+  <title><%= title %></title>
+<% } else { %>
+  <title>'Allo, World!</title>
+<% } %>
+
+<!-- favicon -->
+<link rel="shortcut icon" href="/lono_favicon.png">
+
+<!-- lastly, the css -->
+<link rel="stylesheet" href="/sass/index.css" />

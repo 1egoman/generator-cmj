@@ -13,17 +13,26 @@ chalk = require "chalk"
 path = require "path"
 bodyParser = require "body-parser"
 
+
 exports.main = ->
 
   # connect to database
   exports.connectToDB()
 
+  # set ejs as view engine
+  app.set "view engine", "ejs"
+
   # include all the required middleware
   exports.middleware app
 
   # some sample routes
+  <% if (props.views) { %>
+  app.get "/", (req, res) ->
+      res.render "index"
+  <% } else { %>
   app.get "/", (req, res) ->
     res.send "'Allo, World!"
+  <% } %>
 
   # listen for requests
   PORT = process.argv.port or 8000

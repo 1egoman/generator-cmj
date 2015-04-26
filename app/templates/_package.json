@@ -25,6 +25,7 @@
     "express": "^4.12.3",
     "express-session": "^1.11.1",
     "express-static": "^1.0.3",
+    "ejs": "^2.3.1",
     <% if (props.frontend) { %>
     "chalk": "^1.0.0",
     "node-sass-middleware": "^0.5.0"<% } else {%>

@@ -154,4 +154,9 @@ module.exports = function (grunt) {
     'coffee',
     'coverageBackend'
   ]);
+
+  grunt.registerTask('heroku', [
+    'clean',
+    'coffee'
+  ]);
 };

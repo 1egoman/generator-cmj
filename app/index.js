@@ -9,9 +9,14 @@ var NodeCoffeeGenerator = module.exports = function NodeCoffeeGenerator(args, op
 
   this.on('end', function () {
     this.installDependencies({
-      bower: false,
+      bower: (this.props.bower === "y" || this.props.bower === "Y"),
       skipInstall: options['skip-install']
     });
+
+    this.spawnCommand('git', ['init']);
+    if (this.props.heroku) {
+      this.spawnCommand('heroku', ['config:add', 'BUILDPACK_URL=https://github.com/mbuchetics/heroku-buildpack-nodejs-grunt.git']);
+    };
   });
 
   this.pkg = JSON.parse(this.readFileAsString(path.join(__dirname, '../package.json')));
@@ -47,6 +52,10 @@ NodeCoffeeGenerator.prototype.askFor = function askFor() {
     message: "Scaffold Frontend?",
     default: "y"
   }, {
+    name: "heroku",
+    message: "Scaffold custom heroku buildpack and stuff?",
+    default: "n"
+  }, {
     name: 'githubUsername',
     message: 'GitHub username',
     default: '1egoman'
@@ -74,6 +83,8 @@ NodeCoffeeGenerator.prototype.askFor = function askFor() {
       props.homepage = this.repoUrl;
     }
 
+    props.heroku = (props.heroku.toLowerCase() === "y")
+
     this.props = props;
     var that = this;
 
@@ -85,9 +96,18 @@ NodeCoffeeGenerator.prototype.askFor = function askFor() {
         name: 'bodyparser',
         message: "Which bodyparser should I use? (form, json, or none)",
         default: "json"
+      }, {
+        name: 'bower',
+        message: "Should I set up bower?",
+        default: "y"
+      }, {
+        name: "views",
+        message: "Scaffold views?",
+        default: "y"
       }], function(frontendProps) {
-        console.log(props)
         that.props.bodyparser = frontendProps.bodyparser;
+        that.props.bower = frontendProps.bower;
+        that.props.views = frontendProps.views;
         cb();
       });
 
@@ -104,6 +124,8 @@ NodeCoffeeGenerator.prototype.lib = function lib() {
   this.template('src/name.coffee', 'src/' + this.slugname + '.coffee');
   this.template('src/db.coffee', 'src/db.coffee');
   this.template('src/models/model.coffee', 'src/models/model.coffee');
+
+  this.props.heroku && this.copy("Procfile");
 };
 
 NodeCoffeeGenerator.prototype.models = function models() {
@@ -138,8 +160,20 @@ NodeCoffeeGenerator.prototype.frontend = function frontend() {
   this.mkdir('public');
   this.mkdir('public/sass');
 
+  // bower
+  if (this.props.bower) {
+    this.copy("_bowerrc", ".bowerrc");
+    this.template('_bower.json', 'bower.json');
+  }
+
   // sass templates
   this.template('public/index.scss', 'public/sass/index.scss');
   this.directory('public/bootstrap', 'public/sass/bootstrap');
   this.copy('public/_bootstrap.scss', 'public/sass/_bootstrap.scss');
+
+  // views?
+  if (this.props.views) {
+    this.copy("views/index.ejs", "views/index.ejs");
+    this.directory("views/partials", "views/partials");
+  }
 };
