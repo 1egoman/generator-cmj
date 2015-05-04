@@ -16,22 +16,26 @@ var NodeCoffeeGenerator = module.exports = function NodeCoffeeGenerator(args, op
       skipInstall: options['skip-install']
     });
 
+    var that = this;
+
     // init git repo
-    this.spawnCommand('git', ['init']);
+    this.spawnCommand('git', ['init']).on('close', function() {
+      setTimeout(function() {
+        // dokku / heroku setup
+        if (that.props.heroku) {
+          console.log(chalk.magenta("-----> Setting up heroku..."));
+          that.spawnCommand('heroku', ['config:add', 'BUILDPACK_URL=https://github.com/mbuchetics/heroku-buildpack-nodejs-grunt.git']);
+        };
+        if (that.props.dokku) {
+          console.log(chalk.magenta("-----> Setting up dokku..."));
+          that.spawnCommand('git', ['remote', 'add', 'dokku', 'dokku@apps.rgaus.net:'+that.props.name]);
+        };
 
-    // dokku / heroku setup
-    if (this.props.heroku) {
-      console.log(chalk.magenta("-----> Setting up heroku..."));
-      this.spawnCommand('heroku', ['config:add', 'BUILDPACK_URL=https://github.com/mbuchetics/heroku-buildpack-nodejs-grunt.git']);
-    };
-    if (this.props.dokku) {
-      console.log(chalk.magenta("-----> Setting up dokku..."));
-      this.spawnCommand('git', ['remote', 'add', 'dokku', 'dokku@apps.rgaus.net:'+this.props.name]);
-    };
-
-    // initial commit
-    this.spawnCommand('git', ['add', '.']);
-    this.spawnCommand('git', ['commit', '-m', '"initial commit"']);
+        // initial commit
+        that.spawnCommand('git', ['add', '.']);
+        that.spawnCommand('git', ['commit', '-m', 'initial commit']);
+      }, 100);
+    });
   });
 
   this.pkg = JSON.parse(this.readFileAsString(path.join(__dirname, '../package.json')));
@@ -45,7 +49,8 @@ NodeCoffeeGenerator.prototype.askFor = function askFor() {
   console.log(
     this.yeoman +
     '\nThe name of your project shouldn\'t contain "node" or "js" and' +
-    '\nshould be a unique ID not already in use at search.npmjs.org.');
+    '\nshould be a unique ID not already in use at search.npmjs.org.' +
+    chalk.cyan('\nIf you aren\'t me please don\'t use my prepopulated information!'));
 
   var prompts = [{
     name: 'name',
@@ -84,10 +89,12 @@ NodeCoffeeGenerator.prototype.askFor = function askFor() {
     default: "Ryan Gaus"
   }, {
     name: 'authorEmail',
-    message: 'Author\'s Email'
+    message: 'Author\'s Email',
+    default: 'rsg1egoman@gmail.com'
   }, {
     name: 'authorUrl',
-    message: 'Author\'s Homepage'
+    message: 'Author\'s Homepage',
+    default: 'http://rgaus.net'
   }];
 
   this.currentYear = (new Date()).getFullYear();
@@ -148,9 +155,8 @@ NodeCoffeeGenerator.prototype.lib = function lib() {
   this.props.heroku && this.copy("Procfile");
 
   // dokku
-  if (this.props.heroku) {
-    this.copy("_env");
-
+  if (this.props.dokku) {
+    this.copy("_env", ".env");
   };
 };
 
