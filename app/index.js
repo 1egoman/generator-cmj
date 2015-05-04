@@ -32,9 +32,10 @@ var NodeCoffeeGenerator = module.exports = function NodeCoffeeGenerator(args, op
         };
 
         // initial commit
+        console.log(chalk.magenta("-----> Making first commit..."));
         that.spawnCommand('git', ['add', '.']);
-        that.spawnCommand('git', ['commit', '-m', 'initial commit']);
-      }, 100);
+        that.spawnCommand('git', ['commit', '-m', 'initial_commit']);
+      }, 1000);
     });
   });
 
@@ -80,6 +81,10 @@ NodeCoffeeGenerator.prototype.askFor = function askFor() {
     message: "Scaffold custom dokku buildpack and stuff?",
     default: "n"
   }, {
+    name: "models",
+    message: "Scaffold Mongoose Models?",
+    default: "y"
+  }, {
     name: 'githubUsername',
     message: 'GitHub username',
     default: '1egoman'
@@ -111,6 +116,7 @@ NodeCoffeeGenerator.prototype.askFor = function askFor() {
 
     props.heroku = (props.heroku.toLowerCase() === "y")
     props.dokku = (props.dokku.toLowerCase() === "y")
+    props.models = (props.models.toLowerCase() === "y")
 
     this.props = props;
     var that = this;
@@ -148,9 +154,12 @@ NodeCoffeeGenerator.prototype.askFor = function askFor() {
 
 NodeCoffeeGenerator.prototype.lib = function lib() {
   this.mkdir('src');
-  this.template('src/name.coffee', 'src/' + this.slugname + '.coffee');
-  this.template('src/db.coffee', 'src/db.coffee');
-  this.template('src/models/model.coffee', 'src/models/model.coffee');
+  this.template('src/name.coffee', 'src/index.coffee');
+
+  if (this.props.models) {
+    this.template('src/db.coffee', 'src/db.coffee');
+    this.template('src/models/model.coffee', 'src/models/model.coffee');
+  };
 
   this.props.heroku && this.copy("Procfile");
 
@@ -161,6 +170,8 @@ NodeCoffeeGenerator.prototype.lib = function lib() {
 };
 
 NodeCoffeeGenerator.prototype.models = function models() {
+  if (!this.props.models) return;
+
   this.mkdir('src/models');
   this.template('src/models/model.coffee', 'src/models/schema.coffee');
 };
