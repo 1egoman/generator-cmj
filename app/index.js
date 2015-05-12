@@ -3,20 +3,40 @@
 var util = require('util');
 var path = require('path');
 var yeoman = require('yeoman-generator');
+var chalk = require('chalk');
 
 var NodeCoffeeGenerator = module.exports = function NodeCoffeeGenerator(args, options) {
   yeoman.generators.Base.apply(this, arguments);
 
   this.on('end', function () {
+
+    // npm install / bower install
     this.installDependencies({
       bower: (this.props.bower === "y" || this.props.bower === "Y"),
       skipInstall: options['skip-install']
     });
 
-    this.spawnCommand('git', ['init']);
-    if (this.props.heroku) {
-      this.spawnCommand('heroku', ['config:add', 'BUILDPACK_URL=https://github.com/mbuchetics/heroku-buildpack-nodejs-grunt.git']);
-    };
+    var that = this;
+
+    // init git repo
+    this.spawnCommand('git', ['init']).on('close', function() {
+      setTimeout(function() {
+        // dokku / heroku setup
+        if (that.props.heroku) {
+          console.log(chalk.magenta("-----> Setting up heroku..."));
+          that.spawnCommand('heroku', ['config:add', 'BUILDPACK_URL=https://github.com/mbuchetics/heroku-buildpack-nodejs-grunt.git']);
+        };
+        if (that.props.dokku) {
+          console.log(chalk.magenta("-----> Setting up dokku..."));
+          that.spawnCommand('git', ['remote', 'add', 'dokku', 'dokku@apps.rgaus.net:'+that.props.name]);
+        };
+
+        // initial commit
+        console.log(chalk.magenta("-----> Making first commit..."));
+        that.spawnCommand('git', ['add', '.']);
+        that.spawnCommand('git', ['commit', '-m', 'initial_commit']);
+      }, 1000);
+    });
   });
 
   this.pkg = JSON.parse(this.readFileAsString(path.join(__dirname, '../package.json')));
@@ -30,7 +50,8 @@ NodeCoffeeGenerator.prototype.askFor = function askFor() {
   console.log(
     this.yeoman +
     '\nThe name of your project shouldn\'t contain "node" or "js" and' +
-    '\nshould be a unique ID not already in use at search.npmjs.org.');
+    '\nshould be a unique ID not already in use at search.npmjs.org.' +
+    chalk.cyan('\nIf you aren\'t me please don\'t use my prepopulated information!'));
 
   var prompts = [{
     name: 'name',
@@ -56,6 +77,14 @@ NodeCoffeeGenerator.prototype.askFor = function askFor() {
     message: "Scaffold custom heroku buildpack and stuff?",
     default: "n"
   }, {
+    name: "dokku",
+    message: "Scaffold custom dokku buildpack and stuff?",
+    default: "n"
+  }, {
+    name: "models",
+    message: "Scaffold Mongoose Models?",
+    default: "y"
+  }, {
     name: 'githubUsername',
     message: 'GitHub username',
     default: '1egoman'
@@ -65,10 +94,12 @@ NodeCoffeeGenerator.prototype.askFor = function askFor() {
     default: "Ryan Gaus"
   }, {
     name: 'authorEmail',
-    message: 'Author\'s Email'
+    message: 'Author\'s Email',
+    default: 'rsg1egoman@gmail.com'
   }, {
     name: 'authorUrl',
-    message: 'Author\'s Homepage'
+    message: 'Author\'s Homepage',
+    default: 'http://rgaus.net'
   }];
 
   this.currentYear = (new Date()).getFullYear();
@@ -84,6 +115,8 @@ NodeCoffeeGenerator.prototype.askFor = function askFor() {
     }
 
     props.heroku = (props.heroku.toLowerCase() === "y")
+    props.dokku = (props.dokku.toLowerCase() === "y")
+    props.models = (props.models.toLowerCase() === "y")
 
     this.props = props;
     var that = this;
@@ -121,14 +154,24 @@ NodeCoffeeGenerator.prototype.askFor = function askFor() {
 
 NodeCoffeeGenerator.prototype.lib = function lib() {
   this.mkdir('src');
-  this.template('src/name.coffee', 'src/' + this.slugname + '.coffee');
-  this.template('src/db.coffee', 'src/db.coffee');
-  this.template('src/models/model.coffee', 'src/models/model.coffee');
+  this.template('src/name.coffee', 'src/index.coffee');
+
+  if (this.props.models) {
+    this.template('src/db.coffee', 'src/db.coffee');
+    this.template('src/models/model.coffee', 'src/models/model.coffee');
+  };
 
   this.props.heroku && this.copy("Procfile");
+
+  // dokku
+  if (this.props.dokku) {
+    this.copy("_env", ".env");
+  };
 };
 
 NodeCoffeeGenerator.prototype.models = function models() {
+  if (!this.props.models) return;
+
   this.mkdir('src/models');
   this.template('src/models/model.coffee', 'src/models/schema.coffee');
 };

@@ -1,7 +1,7 @@
 {
   "name": "<%= slugname %>",
   "version": "0.0.0",
-  "main": "src/<%= slugname %>.coffee",
+  "main": "dist/index.js",
   "description": "<%= props.description %>",
   "homepage": "<%= props.homepage %>",
   "bugs": "<%= repoUrl %>/issues",
@@ -19,8 +19,11 @@
       "type": "<%= props.license %>"
     }
   ],
+  "scripts": {
+    "start": "nodemon src/index.coffee"
+  },
   "dependencies": {
-    "mongoose": "^4.0.1",
+    <% if (props.models) { %>"mongoose": "^4.0.1",<% } %>
     "body-parser": "^1.12.3",
     "express": "^4.12.3",
     "express-session": "^1.11.1",

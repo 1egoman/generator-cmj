@@ -17,7 +17,9 @@ bodyParser = require "body-parser"
 exports.main = ->
 
   # connect to database
+  <% if (props.models) { %>
   exports.connectToDB()
+  <% } %>
 
   # set ejs as view engine
   app.set "view engine", "ejs"
@@ -40,7 +42,7 @@ exports.main = ->
     console.log chalk.blue "-> :#{PORT}"
 
 exports.middleware = (app) ->
-  
+
   <% if (props.bodyparser === "form") { %>
   # form body parser
   app.use bodyParser.urlencoded
@@ -62,7 +64,9 @@ exports.middleware = (app) ->
   # serve static assets
   app.use require("express-static") path.join(__dirname, '../public')
 
+<% if (props.models) { %>
 exports.connectToDB = ->
   require("./db") module.exports.mongouri or module.exports.db or "mongodb://user:password@example.com:port/database"
+<% } %>
 
 exports.main()

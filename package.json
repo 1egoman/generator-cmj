@@ -1,6 +1,6 @@
 {
   "name": "generator-cmj",
-  "version": "0.0.7",
+  "version": "0.0.9",
   "description": "A node generator for Yeoman forked from generator-node-coffee",
   "keywords": [
     "yeoman-generator",
@@ -25,6 +25,7 @@
     "test": "mocha"
   },
   "dependencies": {
+    "chalk": "^1.0.0",
     "yeoman-generator": "~0.13.3"
   },
   "devDependencies": {
