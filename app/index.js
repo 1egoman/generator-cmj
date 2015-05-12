@@ -39,7 +39,7 @@ NodeCoffeeGenerator.prototype.askFor = function askFor() {
   }, {
     name: 'description',
     message: 'Description',
-    default: 'The best module ever.'
+    default: 'My New Application'
   }, {
     name: 'homepage',
     message: 'Homepage'
